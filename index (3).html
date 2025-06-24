@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>52微盘 - 分享无限可能</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#0FC6C2',
+                        dark: '#1D2129',
+                        light: '#F2F3F5',
+                        'text-dark': '#4E5969',
+                        'text-light': '#86909C'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-custom {
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .shadow-custom {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+            .hover-scale {
+                transition: transform 0.2s ease-in-out;
+            }
+            .hover-scale:hover {
+                transform: scale(1.03);
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-light text-text-dark min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <a href="#" class="flex items-center">
+                        <i class="fa fa-cloud text-primary text-2xl mr-2"></i>
+                        <span class="text-xl font-bold text-primary">52微盘</span>
+                    </a>
+                    <!-- 导航链接 - 桌面版 -->
+                    <nav class="hidden md:ml-10 md:flex space-x-8">
+                        <a href="#" class="text-primary border-b-2 border-primary px-1 pt-1 font-medium">首页</a>
+                        <a href="#" class="text-text-dark hover:text-primary px-1 pt-1 font-medium transition-colors">文件</a>
+                        <a href="#" class="text-text-dark hover:text-primary px-1 pt-1 font-medium transition-colors">分享</a>
+                        <a href="#" class="text-text-dark hover:text-primary px-1 pt-1 font-medium transition-colors">存储</a>
+                        <a href="#" class="text-text-dark hover:text-primary px-1 pt-1 font-medium transition-colors">帮助</a>
+                    </nav>
+                </div>
+                
+                <!-- 右侧功能区 -->
+                <div class="flex items-center space-x-4">
+                    <!-- 搜索框 -->
+                    <div class="relative hidden md:block">
+                        <input type="text" placeholder="搜索文件..." class="w-64 pl-10 pr-4 py-2 rounded-full bg-light focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all">
+                        <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-text-light"></i>
+                    </div>
+                    
+                    <!-- 上传按钮 -->
+                    <button class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors flex items-center hidden md:block">
+                        <i class="fa fa-upload mr-2"></i>
+                        <span>上传</span>
+                    </button>
+                    
+                    <!-- 用户头像 -->
+                    <div class="relative">
+                        <button class="flex items-center focus:outline-none" id="userMenuBtn">
+                            <img src="https://picsum.photos/200/200?random=1" alt="用户头像" class="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm">
+                            <i class="fa fa-angle-down ml-1 text-text-light hidden md:block"></i>
+                        </button>
+                        <!-- 用户菜单 (默认隐藏) -->
+                        <div class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-10" id="userMenu">
+                            <a href="#" class="block px-4 py-2 text-sm text-text-dark hover:bg-light">个人中心</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-text-dark hover:bg-light">存储空间</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-text-dark hover:bg-light">设置</a>
+                            <div class="border-t border-gray-100 my-1"></div>
+                            <a href="#" class="block px-4 py-2 text-sm text-red-500 hover:bg-light">退出登录</a>
+                        </div>
+                    </div>
+                    
+                    <!-- 移动端菜单按钮 -->
+                    <button class="md:hidden focus:outline-none" id="mobileMenuBtn">
+                        <i class="fa fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 移动端导航菜单 (默认隐藏) -->
+        <div class="md:hidden hidden" id="mobileMenu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white">
+                <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-primary bg-primary/10">首页</a>
+                <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-text-dark hover:bg-light">文件</a>
+                <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-text-dark hover:bg-light">分享</a>
+                <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-text-dark hover:bg-light">存储</a>
+                <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-text-dark hover:bg-light">帮助</a>
+                <div class="pt-4 pb-3 border-t border-gray-200">
+                    <div class="flex items-center px-3">
+                        <div class="flex-shrink-0">
+                            <img class="h-10 w-10 rounded-full" src="https://picsum.photos/200/200?random=1" alt="用户头像">
+                        </div>
+                        <div class="ml-3">
+                            <div class="text-base font-medium text-dark">用户名</div>
+                            <div class="text-sm font-medium text-text-light">user@example.com</div>
+                        </div>
+                    </div>
+                    <div class="mt-3 px-2 space-y-1">
+                        <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-text-dark hover:bg-light">个人中心</a>
+                        <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-text-dark hover:bg-light">存储空间</a>
+                        <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-text-dark hover:bg-light">设置</a>
+                        <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-red-500 hover:bg-light">退出登录</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- 欢迎区域 -->
+        <section class="mb-8">
+            <div class="bg-gradient-to-r from-primary/90 to-secondary/90 rounded-2xl p-6 md:p-8 text-white shadow-lg hover-scale">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <div class="mb-6 md:mb-0">
+                        <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-2">欢迎回来，用户</h1>
+                        <p class="text-white/80 text-lg mb-4">你的存储空间还剩 <span class="font-semibold">8.2GB</span> (82%)</p>
+                        <div class="w-full bg-white/20 rounded-full h-2.5 mb-2">
+                            <div class="bg-white h-2.5 rounded-full" style="width: 82%"></div>
+                        </div>
+                        <div class="text-sm text-white/70">
+                            总空间: 10GB | 已使用: 1.8GB
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <button class="bg-white text-primary hover:bg-white/90 px-5 py-2 rounded-lg font-medium transition-colors flex items-center">
+                            <i class="fa fa-upload mr-2"></i>
+                            <span>上传文件</span>
+                        </button>
+                        <button class="bg-white/20 hover:bg-white/30 text-white px-5 py-2 rounded-lg font-medium transition-colors flex items-center">
+                            <i class="fa fa-folder-open mr-2"></i>
+                            <span>新建文件夹</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 快捷操作区 -->
+        <section class="mb-8">
+            <h2 class="text-xl font-bold mb-4">快捷操作</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <a href="#" class="bg-white rounded-xl p-5 shadow-custom hover-scale flex flex-col items-center text-center">
+                    <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-3">
+                        <i class="fa fa-file-image-o text-primary text-xl"></i>
+                    </div>
+                    <span class="font-medium">图片</span>
+                </a>
+                <a href="#" class="bg-white rounded-xl p-5 shadow-custom hover-scale flex flex-col items-center text-center">
+                    <div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mb-3">
+                        <i class="fa fa-file-video-o text-secondary text-xl"></i>
+                    </div>
+                    <span class="font-medium">视频</span>
+                </a>
+                <a href="#" class="bg-white rounded-xl p-5 shadow-custom hover-scale flex flex-col items-center text-center">
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mb-3">
+                        <i class="fa fa-file-audio-o text-purple-500 text-xl"></i>
+                    </div>
+                    <span class="font-medium">音频</span>
+                </a>
+                <a href="#" class="bg-white rounded-xl p-5 shadow-custom hover-scale flex flex-col items-center text-center">
+                    <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-3">
+                        <i class="fa fa-file-text-o text-amber-500 text-xl"></i>
+                    </div>
+                    <span class="font-medium">文档</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- 最近文件区 -->
+        <section class="mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">最近文件</h2>
+                <a href="#" class="text-primary hover:text-primary/80 font-medium flex items-center">
+                    <span>查看全部</span>
+                    <i class="fa fa-angle-right ml-1"></i>
+                </a>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-custom overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-text-light uppercase tracking-wider">文件名</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-text-light uppercase tracking-wider hidden md:table-cell">大小</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-text-light uppercase tracking-wider hidden md:table-cell">修改时间</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-text-light uppercase tracking-wider">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <!-- 文件行 -->
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-blue-100 rounded-md">
+                                            <i class="fa fa-file-image-o text-blue-500"></i>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-dark">设计图稿.png</div>
+                                            <div class="text-xs text-text-light">图片</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                                    <div class="text-sm text-text-light">2.4MB</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                                    <div class="text-sm text-text-light">2025-06-24 14:30</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-text-light">
+                                    <div class="flex space-x-3">
+                                        <button class="text-text-light hover:text-primary transition-colors">
+                                            <i class="fa fa-download"></i>
+                                        </button>
+                                        <button class="text-text-light hover:text-primary transition-colors">
+                                            <i class="fa fa-share-alt"></i>
+                                        </button>
+                                        <button class="text-text-light hover:text-primary transition-colors">
+                                            <i class="fa fa-ellipsis-v"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-green-100 rounded-md">
+                                            <i class="fa fa-file-video-o text-green-500"></i>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-dark">项目演示.mp4</div>
+                                            <div class="text-xs text-text-light">视频</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                                    <div class="text-sm text-text-light">128.5MB</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                                    <div class="text-sm text-text-light">2025-06-23 09:15</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-text-light">
+                                    <div class="flex space-x-3">
+                                        <button class="text-text-light hover:text-primary transition-colors">
+                                            <i class="fa fa-download"></i>
+                                        </button>
+                                        <button class="text-text-light hover:text-primary transition-colors">
+                                            <i class="fa fa-share-alt"></i>
+                                        </button>
+                                        <button class="text-text-light hover:text-primary transition-colors">
+                                            <i class="fa fa-ellipsis-v"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-amber-100 rounded-md">
+                                            <i class="fa fa-file-text-o text-amber-500"></i>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-dark">项目规划.docx</div>
+                                            <div class="text-xs text-text-light">文档</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                                    <div class="text-sm text-text-light">4.2MB</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                                    <div class="text-sm text-text-light">2025-06-22 16:45</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-text-light">
+                                    <div class="flex space-x-3">
+                                        <button class="text-text-light hover:text-primary transition-colors">
+                                            <i class="fa fa-download"></i>
+                                        </button>
+                                        <button class="text-text-light hover:text-primary transition-colors">
+                                            <i class="fa fa-share-alt"></i>
+                                        </button>
+                                        <button class="text-text-light hover:text-primary transition-colors">
+                                            <i class="fa fa-ellipsis-v"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-purple-100 rounded-md">
+                                            <i class="fa fa-file-audio-o text-purple-500"></i>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-dark">会议录音.m4a</div>
+                                            <div class="text-xs text-text-light">音频</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                                    <div class="text-sm text-text-light">15.8MB</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                                    <div class="text-sm text-text-light">2025-06-21 11:20</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-text-light">
+                                    <div class="flex space-x-3">
+                                        <button class="text-text-light hover:text-primary transition-colors">
+                                            <i class="fa fa-download"></i>
+                                        </button>
+                                        <button class="text-text-light hover:text-primary transition-colors">
+                                            <i class="fa fa-share-alt"></i>
+                                        </button>
+                                        <button class="text-text-light hover:text-primary transition-colors">
+                                            <i class="fa fa-ellipsis-v"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-indigo-100 rounded-md">
+                                            <i class="fa fa-file-zip-o text-indigo-500"></i>
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-dark">资源包.zip</div>
+                                            <div class="text-xs text-text-light">压缩包</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                                    <div class="text-sm text-text-light">68.3MB</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                                    <div class="text-sm text-text-light">2025-06-20 08:50</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-text-light">
+                                    <div class="flex space-x-3">
+                                        <button class="text-text-light hover:text-primary transition-colors">
+                                            <i class="fa fa-download"></i>
+                                        </button>
+                                        <button class="text-text-light hover:text-primary transition-colors">
+                                            <i class="fa fa-share-alt"></i>
+                                        </button>
+                                        <button class="text-text-light hover:text-primary transition-colors">
+                                            <i class="fa fa-ellipsis-v"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- 移动端查看更多 -->
+                <div class="px-6 py-3 text-center md:hidden">
+                    <a href="#" class="text-primary hover:text-primary/80 font-medium">查看更多文件</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 存储信息区 -->
+        <section>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">存储空间</h2>
+                <a href="#" class="text-primary hover:text-primary/80 font-medium flex items-center">
+                    <span>升级套餐</span>
+                    <i class="fa fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- 存储概览卡片 -->
+                <div class="bg-white rounded-xl shadow-custom p-6 md:col-span-2">
+                    <h3 class="text-lg font-semibold mb-4">存储概览</h3>
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div class="w-full md:w-1/2">
+                            <div class="mb-6">
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-sm font-medium">图片</span>
+                                    <span class="text-sm text-text-light">45%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: 45%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-6">
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-sm font-medium">视频</span>
+                                    <span class="text-sm text-text-light">30%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: 30%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-6">
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-sm font-medium">文档</span>
+                                    <span class="text-sm text-text-light">15%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-amber-500 h-2 rounded-full" style="width: 15%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <span class="text-sm font-medium">其他</span>
+                                    <span class="text-sm text-text-light">10%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-purple-500 h-2 rounded-full" style="width: 10%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-1/2 flex justify-center">
+                            <div class="relative w-48 h-48">
+                                <svg class="w-full h-full" viewBox="0 0 100 100">
+                                    <circle cx="50" cy="50" r="45" fill="none" stroke="#F2F3F5" stroke-width="10" />
+                                    <circle cx="50" cy="50" r="45" fill="none" stroke="#165DFF" stroke-width="10" 
+                                            stroke-dasharray="282.74" stroke-dashoffset="50.89" transform="rotate(-90 50 50)" />
+                                    <text x="50" y="45" text-anchor="middle" font-size="24" font-weight="bold" fill="#1D2129">82%</text>
+                                    <text x="50" y="65" text-anchor="middle" font-size="12" fill="#86909C">已使用</text>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 存储套餐卡片 -->
+                <div class="bg-white rounded-xl shadow-custom p-6">
+                    <h3 class="text-lg font-semibold mb-4">当前套餐</h3>
+                    <div class="bg-primary/5 rounded-lg p-4 mb-4">
+                        <div class="flex items-center mb-2">
+                            <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+                                <i class="fa fa-diamond text-primary"></i>
+                            </div>
+                            <h4 class="font-semibold">基础套餐</h4>
+                        </div>
+                        <p class="text-sm text-text-light mb-3">适合个人日常使用</p>
+                        <div class="flex justify-between text-sm">
+                            <span>存储空间</span>
+                            <span class="font-medium">10GB</span>
+                        </div>
+                        <div class="flex justify-between text-sm mt-1">
+                            <span>单文件大小限制</span>
+                            <span class="font-medium">2GB</span>
+                        </div>
+                        <div class="flex justify-between text-sm mt-1">
+                            <span>下载速度</span>
+                            <span class="font-medium">最高 20MB/s</span>
+                        </div>
+                    </div>
+                    <button class="w-full bg-primary hover:bg-primary/90 text-white py-2 rounded-lg font-medium transition-colors">
+                        升级套餐
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-white border-t border-gray-200 mt-12">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <i class="fa fa-cloud text-primary text-2xl mr-2"></i>
+                        <span class="text-xl font-bold text-primary">52微盘</span>
+                    </div>
+                    <p class="text-sm text-text-light mb-4">安全、稳定、高效的云存储服务，让你的数据随时随地，触手可及。</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-text-light hover:text-primary transition-colors">
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                        <a href="#" class="text-text-light hover:text-primary transition-colors">
+                            <i class="fa fa-wechat"></i>
+                        </a>
+                        <a href="#" class="text-text-light hover:text-primary transition-colors">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-base font-semibold mb-4">产品</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-text-light hover:text-primary transition-colors">个人版</a></li>
+                        <li><a href="#" class="text-text-light hover:text-primary transition-colors">企业版</a></li>
+                        <li><a href="#" class="text-text-light hover:text-primary transition-colors">API接口</a></li>
+                        <li><a href="#" class="text-text-light hover:text-primary transition-colors">客户端下载</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-base font-semibold mb-4">支持</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-text-light hover:text-primary transition-colors">帮助中心</a></li>
+                        <li><a href="#" class="text-text-light hover:text-primary transition-colors">常见问题</a></li>
+                        <li><a href="#" class="text-text-light hover:text-primary transition-colors">联系我们</a></li>
+                        <li><a href="#" class="text-text-light hover:text-primary transition-colors">意见反馈</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-base font-semibold mb-4">法律</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-text-light hover:text-primary transition-colors">服务条款</a></li>
+                        <li><a href="#" class="text-text-light hover:text-primary transition-colors">隐私政策</a></li>
+                        <li><a href="#" class="text-text-light hover:text-primary transition-colors">版权声明</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-200 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-sm text-text-light mb-4 md:mb-0">© 2025 52微盘. 保留所有权利.</p>
+                <div class="flex space-x-4 text-sm">
+                    <a href="#" class="text-text-light hover:text-primary transition-colors">服务条款</a>
+                    <a href="#" class="text-text-light hover:text-primary transition-colors">隐私政策</a>
+                    <a href="#" class="text-text-light hover:text-primary transition-colors">网站地图</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // 导航栏滚动效果
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 10) {
+                navbar.classList.add('shadow-md');
+                navbar.classList.remove('shadow-sm');
+            } else {
+                navbar.classList.remove('shadow-md');
+                navbar.classList.add('shadow-sm');
+            }
+        });
+        
+        // 用户菜单切换
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        const userMenu = document.getElementById('userMenu');
+        userMenuBtn.addEventListener('click', () => {
+            userMenu.classList.toggle('hidden');
+        });
+        
+        // 移动端菜单切换
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // 点击页面其他地方关闭菜单
+        document.addEventListener('click', (e) => {
+            if (!userMenuBtn.contains(e.target) && !userMenu.contains(e.target)) {
+                userMenu.classList.add('hidden');
+            }
+            if (!mobileMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenu.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>    
